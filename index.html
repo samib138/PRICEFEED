@@ -3,16 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crypto Price Tracker - Professional</title>
+  <meta name="description" content="Professional cryptocurrency price tracker with real-time updates" />
+  <title>Crypto Price Tracker - Professional Edition</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5568d3;
+      --secondary: #764ba2;
+      --success: #38a169;
+      --error: #e53e3e;
+      --warning: #ed8936;
+      --text-primary: #2d3748;
+      --text-secondary: #718096;
+      --bg-light: #edf2f7;
+      --bg-white: #ffffff;
+      --border: #e2e8f0;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+      --shadow-md: 0 10px 30px rgba(0,0,0,0.15);
+      --shadow-lg: 0 15px 40px rgba(0,0,0,0.2);
+      --radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       min-height: 100vh;
       padding: 20px;
-      color: #333;
+      color: var(--text-primary);
+      line-height: 1.6;
     }
     
     .container {
@@ -20,472 +41,1114 @@
       margin: 0 auto;
     }
     
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
     h1 { 
       color: white;
       font-size: 2.5rem;
-      margin-bottom: 30px;
-      text-align: center;
+      margin-bottom: 12px;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-weight: 700;
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .network-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .status-online { background: var(--success); }
+    .status-offline { background: var(--error); animation: none; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.95); }
     }
     
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
+      gap: 24px;
+      margin-bottom: 30px;
     }
     
-    .asset-card { 
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .card { 
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
     }
     
-    .asset-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
     }
     
     .asset-header {
       display: flex;
       align-items: center;
-      margin-bottom: 16px;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
     
-    .asset-icon {
-      width: 40px;
-      height: 40px;
-      margin-right: 12px;
-      border-radius: 50%;
-    }
-    
-    h2 { 
-      color: #2d3748;
-      font-size: 1.5rem;
-    }
-    
-    .price-display { 
-      font-size: 2rem;
-      font-weight: bold;
-      color: #667eea;
-      margin: 16px 0;
-      min-height: 40px;
+    .asset-info {
       display: flex;
       align-items: center;
     }
     
-    .loading { 
-      color: #a0aec0;
-      font-size: 1rem;
+    .asset-icon {
+      width: 48px;
+      height: 48px;
+      margin-right: 14px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow-sm);
     }
     
-    .error { 
-      color: #e53e3e;
+    .asset-name h2 { 
+      color: var(--text-primary);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    
+    .asset-symbol {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    
+    .refresh-btn {
+      background: var(--bg-light);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 1.2rem;
+    }
+    
+    .refresh-btn:hover {
+      background: var(--border);
+      transform: rotate(180deg);
+    }
+    
+    .refresh-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .price-container { 
+      margin: 24px 0;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .price-display {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    
+    .price-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       font-size: 0.9rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
     }
     
-    .success {
-      color: #38a169;
+    .price-change.positive {
+      color: var(--success);
+      background: rgba(56, 161, 105, 0.1);
     }
     
-    .timestamp {
+    .price-change.negative {
+      color: var(--error);
+      background: rgba(229, 62, 62, 0.1);
+    }
+    
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+      border-radius: 8px;
+      height: 40px;
+    }
+    
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .error-message { 
+      color: var(--error);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(229, 62, 62, 0.1);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 3px solid var(--error);
+    }
+    
+    .metadata {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .last-updated {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .rate-limit-warning {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(237, 137, 54, 0.1);
+      border-radius: 6px;
+      color: var(--warning);
       font-size: 0.75rem;
-      color: #718096;
-      margin-top: 8px;
     }
     
-    .custom-section {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    .custom-tracker {
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .custom-tracker h2 {
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+    
+    .input-group {
+      margin-bottom: 16px;
     }
     
     label { 
       display: block;
-      margin-top: 16px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 600;
-      color: #2d3748;
-      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+    
+    .input-wrapper {
+      position: relative;
     }
     
     input { 
       width: 100%;
-      padding: 12px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
       font-size: 1rem;
-      transition: border-color 0.2s ease;
+      transition: var(--transition);
+      font-family: inherit;
     }
     
     input:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
     
     input.invalid {
-      border-color: #e53e3e;
+      border-color: var(--error);
+    }
+    
+    input.valid {
+      border-color: var(--success);
+    }
+    
+    .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
     }
     
     .button-group {
       display: flex;
-      gap: 10px;
-      margin-top: 16px;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     
     button { 
       flex: 1;
-      padding: 12px 20px;
-      background: #667eea;
+      padding: 14px 24px;
+      background: var(--primary);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
     }
     
     button:hover {
-      background: #5568d3;
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
     
     button:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
     
     button:disabled {
-      background: #cbd5e0;
+      background: var(--border);
       cursor: not-allowed;
+      transform: none;
     }
     
     button.secondary {
-      background: #718096;
+      background: var(--text-secondary);
     }
     
     button.secondary:hover {
       background: #4a5568;
     }
     
-    .status-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-      animation: pulse 2s ease-in-out infinite;
+    button.pause {
+      background: var(--warning);
     }
     
-    .status-live {
-      background: #38a169;
-    }
-    
-    .status-error {
-      background: #e53e3e;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    button.pause:hover {
+      background: #dd6b20;
     }
     
     .info-box {
-      background: #edf2f7;
-      border-left: 4px solid #667eea;
-      padding: 12px;
-      margin-top: 16px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      color: #4a5568;
+      background: var(--bg-light);
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text-primary);
     }
     
+    .info-box strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+    
+    .info-box code {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--primary);
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text-primary);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+      z-index: 1000;
+      max-width: 400px;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+    .toast.warning { background: var(--warning); }
+    
     @media (max-width: 768px) {
-      h1 { font-size: 1.8rem; }
+      h1 { font-size: 2rem; }
       .grid { grid-template-columns: 1fr; }
+      .price-display { font-size: 1.8rem; }
+      .custom-tracker { padding: 24px; }
+      .button-group { flex-direction: column; }
+      .toast { left: 20px; right: 20px; }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🚀 Crypto Price Tracker</h1>
-    
-    <div class="grid">
-      <div class="asset-card">
-        <div class="asset-header">
-          <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="Bitcoin" class="asset-icon" />
-          <h2>Bitcoin (BTC)</h2>
+    <div class="header">
+      <h1>🚀 Crypto Price Tracker</h1>
+      <div class="subtitle">
+        Real-time cryptocurrency prices powered by CoinCap API
+        <div class="network-status">
+          <span class="status-dot status-online" id="networkStatus"></span>
+          <span id="networkText">Online</span>
         </div>
-        <div class="price-display" id="btcPrice">
-          <span class="loading">Loading...</span>
-        </div>
-        <div class="timestamp" id="btcTime"></div>
-      </div>
-      
-      <div class="asset-card">
-        <div class="asset-header">
-          <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="Ethereum" class="asset-icon" />
-          <h2>Ethereum (ETH)</h2>
-        </div>
-        <div class="price-display" id="ethPrice">
-          <span class="loading">Loading...</span>
-        </div>
-        <div class="timestamp" id="ethTime"></div>
       </div>
     </div>
     
-    <div class="custom-section">
+    <div class="grid">
+      <div class="card">
+        <div class="asset-header">
+          <div class="asset-info">
+            <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="Bitcoin" class="asset-icon" />
+            <div class="asset-name">
+              <h2>Bitcoin</h2>
+              <span class="asset-symbol">BTC</span>
+            </div>
+          </div>
+          <button class="refresh-btn" onclick="app.refreshAsset('btc')" aria-label="Refresh Bitcoin price" id="btcRefresh">
+            🔄
+          </button>
+        </div>
+        <div class="price-container" id="btcContainer">
+          <div class="skeleton"></div>
+        </div>
+        <div class="metadata">
+          <span class="last-updated" id="btcTime">⏱️ Loading...</span>
+          <span id="btcLimit"></span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="asset-header">
+          <div class="asset-info">
+            <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="Ethereum" class="asset-icon" />
+            <div class="asset-name">
+              <h2>Ethereum</h2>
+              <span class="asset-symbol">ETH</span>
+            </div>
+          </div>
+          <button class="refresh-btn" onclick="app.refreshAsset('eth')" aria-label="Refresh Ethereum price" id="ethRefresh">
+            🔄
+          </button>
+        </div>
+        <div class="price-container" id="ethContainer">
+          <div class="skeleton"></div>
+        </div>
+        <div class="metadata">
+          <span class="last-updated" id="ethTime">⏱️ Loading...</span>
+          <span id="ethLimit"></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="custom-tracker">
       <h2>📊 Custom Asset Tracker</h2>
       
-      <label for="customUrl">API URL (JSON endpoint with price data):</label>
-      <input 
-        type="url" 
-        id="customUrl" 
-        placeholder="https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd"
-        aria-label="Custom API URL"
-      />
-      
-      <label for="jsonPath">JSON Path to Price (dot notation):</label>
-      <input 
-        type="text" 
-        id="jsonPath" 
-        placeholder="dogecoin.usd"
-        aria-label="JSON path to price value"
-      />
+      <div class="input-group">
+        <label for="customUrl">CoinGecko Coin URL:</label>
+        <div class="input-wrapper">
+          <input 
+            type="url" 
+            id="customUrl" 
+            placeholder="https://www.coingecko.com/en/coins/cardano"
+            aria-label="CoinGecko coin URL"
+            autocomplete="off"
+          />
+          <span class="input-icon" id="inputIcon"></span>
+        </div>
+      </div>
       
       <div class="button-group">
-        <button onclick="trackCustomAsset()" id="trackBtn">
-          Track Asset
+        <button onclick="app.trackCustom()" id="trackBtn">
+          <span>🎯</span> Track Asset
         </button>
-        <button onclick="clearCustomAsset()" class="secondary" id="clearBtn">
-          Clear
+        <button onclick="app.pauseTracking()" class="pause" id="pauseBtn" disabled>
+          <span>⏸️</span> <span id="pauseText">Pause</span>
+        </button>
+        <button onclick="app.clearCustom()" class="secondary" id="clearBtn">
+          <span>✖️</span> Clear
         </button>
       </div>
       
-      <div class="price-display" id="customPrice">
-        <span class="loading">Enter URL and path above</span>
+      <div class="price-container" id="customContainer">
+        <div style="color: var(--text-secondary); font-size: 1rem;">
+          👆 Paste a CoinGecko coin URL above to start tracking
+        </div>
       </div>
-      <div class="timestamp" id="customTime"></div>
+      <div class="metadata">
+        <span class="last-updated" id="customTime"></span>
+        <span id="customLimit"></span>
+      </div>
       
       <div class="info-box">
-        <strong>💡 Example URLs:</strong><br>
-        • Dogecoin: <code>https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd</code> → Path: <code>dogecoin.usd</code><br>
-        • Cardano: <code>https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd</code> → Path: <code>cardano.usd</code>
+        <strong>💡 How to use:</strong>
+        1. Visit <code>coingecko.com</code> and find any cryptocurrency<br>
+        2. Copy the page URL (e.g., <code>https://www.coingecko.com/en/coins/solana</code>)<br>
+        3. Paste it above and click "Track Asset"<br>
+        4. Prices auto-refresh every 30 seconds<br><br>
+        <strong>✨ Popular coins:</strong> Bitcoin, Ethereum, Cardano, Solana, XRP, Dogecoin, Polkadot, Avalanche, Polygon, Chainlink, Uniswap, Litecoin, Stellar
       </div>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
-    // Configuration
-    const CONFIG = {
-      refreshInterval: 30000, // 30 seconds
-      maxRetries: 3,
-      retryDelay: 2000
-    };
+    /**
+     * Production-grade Crypto Price Tracker Application
+     * @version 2.0.0
+     */
     
-    let customAssetInterval = null;
-    
-    // Utility: Validate URL
-    function isValidUrl(string) {
-      try {
-        const url = new URL(string);
-        return url.protocol === "http:" || url.protocol === "https:";
-      } catch {
-        return false;
+    const app = (() => {
+      // Configuration
+      const CONFIG = {
+        refreshInterval: 30000, // 30 seconds
+        maxRetries: 3,
+        retryDelay: 2000,
+        debounceDelay: 500,
+        rateLimitThreshold: 45, // API calls per minute warning
+        apiBaseUrl: 'https://api.coincap.io/v2',
+        coinMapping: {
+          'bitcoin': 'bitcoin',
+          'ethereum': 'ethereum',
+          'cardano': 'cardano',
+          'solana': 'solana',
+          'ripple': 'ripple',
+          'xrp': 'ripple',
+          'dogecoin': 'dogecoin',
+          'polkadot': 'polkadot',
+          'avalanche': 'avalanche-2',
+          'polygon': 'polygon',
+          'matic': 'polygon',
+          'chainlink': 'chainlink',
+          'link': 'chainlink',
+          'uniswap': 'uniswap',
+          'litecoin': 'litecoin',
+          'stellar': 'stellar',
+          'xlm': 'stellar'
+        }
+      };
+      
+      // Application state
+      const state = {
+        intervals: {
+          btc: null,
+          eth: null,
+          custom: null
+        },
+        previousPrices: {
+          btc: null,
+          eth: null,
+          custom: null
+        },
+        customCoinId: null,
+        customPaused: false,
+        apiCallCount: 0,
+        lastResetTime: Date.now(),
+        isOnline: navigator.onLine,
+        debounceTimer: null
+      };
+      
+      // DOM elements cache
+      const elements = {
+        btcContainer: document.getElementById('btcContainer'),
+        ethContainer: document.getElementById('ethContainer'),
+        customContainer: document.getElementById('customContainer'),
+        btcTime: document.getElementById('btcTime'),
+        ethTime: document.getElementById('ethTime'),
+        customTime: document.getElementById('customTime'),
+        btcLimit: document.getElementById('btcLimit'),
+        ethLimit: document.getElementById('ethLimit'),
+        customLimit: document.getElementById('customLimit'),
+        customUrl: document.getElementById('customUrl'),
+        trackBtn: document.getElementById('trackBtn'),
+        pauseBtn: document.getElementById('pauseBtn'),
+        clearBtn: document.getElementById('clearBtn'),
+        inputIcon: document.getElementById('inputIcon'),
+        networkStatus: document.getElementById('networkStatus'),
+        networkText: document.getElementById('networkText'),
+        toast: document.getElementById('toast')
+      };
+      
+      /**
+       * Utility: Format currency
+       */
+      function formatPrice(value) {
+        const num = parseFloat(value);
+        if (isNaN(num)) return null;
+        
+        const decimals = num < 1 ? 6 : num < 100 ? 4 : 2;
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals
+        }).format(num);
       }
-    }
-    
-    // Utility: Resolve nested JSON path
-    function resolvePath(obj, path) {
-      if (!path || !obj) return null;
-      return path.split('.').reduce((acc, part) => {
-        return acc && acc[part] !== undefined ? acc[part] : null;
-      }, obj);
-    }
-    
-    // Utility: Format price
-    function formatPrice(value) {
-      const num = parseFloat(value);
-      if (isNaN(num)) return null;
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 8
-      }).format(num);
-    }
-    
-    // Utility: Get timestamp
-    function getTimestamp() {
-      return new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    }
-    
-    // Generic fetch with retry logic
-    async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
-      for (let i = 0; i < retries; i++) {
+      
+      /**
+       * Utility: Get formatted timestamp
+       */
+      function getTimestamp() {
+        return new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
+      
+      /**
+       * Utility: Validate URL
+       */
+      function isValidUrl(string) {
         try {
-          const response = await fetch(url);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          
-          const data = await response.json();
-          return { success: true, data };
-          
-        } catch (error) {
-          if (i === retries - 1) {
-            return { 
-              success: false, 
-              error: error.message.includes('CORS') 
-                ? 'CORS error - API may not allow browser requests' 
-                : error.message 
-            };
-          }
-          await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay));
+          const url = new URL(string);
+          return (url.protocol === 'http:' || url.protocol === 'https:') && 
+                 url.hostname.includes('coingecko.com');
+        } catch {
+          return false;
         }
       }
-    }
-    
-    // Fetch Bitcoin price
-    async function fetchBTC() {
-      const result = await fetchWithRetry(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-      );
       
-      const priceEl = document.getElementById("btcPrice");
-      const timeEl = document.getElementById("btcTime");
-      
-      if (result.success && result.data.bitcoin?.usd) {
-        const price = formatPrice(result.data.bitcoin.usd);
-        priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
-        timeEl.textContent = `Updated: ${getTimestamp()}`;
-      } else {
-        priceEl.innerHTML = `<span class="error">⚠️ ${result.error || 'Failed to fetch BTC price'}</span>`;
-      }
-    }
-    
-    // Fetch Ethereum price
-    async function fetchETH() {
-      const result = await fetchWithRetry(
-        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-      );
-      
-      const priceEl = document.getElementById("ethPrice");
-      const timeEl = document.getElementById("ethTime");
-      
-      if (result.success && result.data.ethereum?.usd) {
-        const price = formatPrice(result.data.ethereum.usd);
-        priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
-        timeEl.textContent = `Updated: ${getTimestamp()}`;
-      } else {
-        priceEl.innerHTML = `<span class="error">⚠️ ${result.error || 'Failed to fetch ETH price'}</span>`;
-      }
-    }
-    
-    // Fetch custom asset
-    async function fetchCustomAsset() {
-      const url = document.getElementById("customUrl").value.trim();
-      const path = document.getElementById("jsonPath").value.trim();
-      const priceEl = document.getElementById("customPrice");
-      const timeEl = document.getElementById("customTime");
-      const urlInput = document.getElementById("customUrl");
-      const pathInput = document.getElementById("jsonPath");
-      
-      // Validation
-      if (!url || !path) {
-        priceEl.innerHTML = '<span class="error">⚠️ Please enter both URL and JSON path</span>';
-        return;
+      /**
+       * Utility: Extract coin ID from CoinGecko URL
+       */
+      function extractCoinId(url) {
+        try {
+          const match = url.match(/coingecko\.com\/[^/]+\/coins\/([^/?#]+)/);
+          return match ? match[1] : null;
+        } catch {
+          return null;
+        }
       }
       
-      if (!isValidUrl(url)) {
-        urlInput.classList.add('invalid');
-        priceEl.innerHTML = '<span class="error">⚠️ Invalid URL format</span>';
-        return;
+      /**
+       * Utility: Calculate price change
+       */
+      function getPriceChange(current, previous) {
+        if (!previous || !current) return null;
+        const change = ((current - previous) / previous) * 100;
+        return {
+          percent: change,
+          direction: change >= 0 ? 'positive' : 'negative',
+          arrow: change >= 0 ? '▲' : '▼'
+        };
       }
       
-      urlInput.classList.remove('invalid');
-      pathInput.classList.remove('invalid');
-      
-      // Show loading
-      priceEl.innerHTML = '<span class="loading">Fetching data...</span>';
-      
-      const result = await fetchWithRetry(url);
-      
-      if (result.success) {
-        const value = resolvePath(result.data, path);
+      /**
+       * Show toast notification
+       */
+      function showToast(message, type = 'info') {
+        elements.toast.textContent = message;
+        elements.toast.className = `toast ${type}`;
+        elements.toast.classList.add('show');
         
-        if (value !== null && value !== undefined) {
-          const price = formatPrice(value);
-          if (price) {
-            priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
-            timeEl.textContent = `Updated: ${getTimestamp()}`;
-          } else {
-            priceEl.innerHTML = '<span class="error">⚠️ Invalid price value</span>';
+        setTimeout(() => {
+          elements.toast.classList.remove('show');
+        }, 3000);
+      }
+      
+      /**
+       * Track API rate limit
+       */
+      function trackApiCall() {
+        const now = Date.now();
+        const elapsed = now - state.lastResetTime;
+        
+        if (elapsed > 60000) { // Reset counter every minute
+          state.apiCallCount = 1;
+          state.lastResetTime = now;
+        } else {
+          state.apiCallCount++;
+        }
+        
+        return state.apiCallCount >= CONFIG.rateLimitThreshold;
+      }
+      
+      /**
+       * Show rate limit warning
+       */
+      function showRateLimit(assetId) {
+        const limitEl = elements[`${assetId}Limit`];
+        if (limitEl && state.apiCallCount >= CONFIG.rateLimitThreshold) {
+          limitEl.innerHTML = `<span class="rate-limit-warning">⚠️ Rate limit: ${state.apiCallCount}/min</span>`;
+        }
+      }
+      
+      /**
+       * Fetch with retry and error handling
+       */
+      async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
+        // Check network status
+        if (!state.isOnline) {
+          return { 
+            success: false, 
+            error: 'No internet connection' 
+          };
+        }
+        
+        for (let i = 0; i < retries; i++) {
+          try {
+            const response = await fetch(url, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            
+            if (!response.ok) {
+              if (response.status === 429) {
+                throw new Error('Rate limit exceeded. Please wait before making more requests.');
+              }
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            trackApiCall();
+            
+            return { success: true, data };
+            
+          } catch (error) {
+            console.error(`Fetch attempt ${i + 1} failed:`, error);
+            
+            if (i === retries - 1) {
+              return { 
+                success: false, 
+                error: error.message.includes('Failed to fetch') 
+                  ? 'Network error. Please check your connection.' 
+                  : error.message 
+              };
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay));
+          }
+        }
+      }
+      
+      /**
+       * Render price display
+       */
+      function renderPrice(container, price, change, assetId) {
+        const priceFormatted = formatPrice(price);
+        
+        let html = `<div class="price-display">${priceFormatted}`;
+        
+        if (change) {
+          html += `
+            <span class="price-change ${change.direction}">
+              ${change.arrow} ${Math.abs(change.percent).toFixed(2)}%
+            </span>
+          `;
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+      }
+      
+      /**
+       * Render error message
+       */
+      function renderError(container, message) {
+        container.innerHTML = `
+          <div class="error-message">
+            <span>⚠️</span>
+            <span>${message}</span>
+          </div>
+        `;
+      }
+      
+      /**
+       * Fetch Bitcoin price
+       */
+      async function fetchBTC() {
+        const result = await fetchWithRetry(
+          `${CONFIG.apiBaseUrl}/assets/bitcoin`
+        );
+        
+        if (result.success && result.data?.data?.priceUsd) {
+          const price = parseFloat(result.data.data.priceUsd);
+          const change = getPriceChange(price, state.previousPrices.btc);
+          
+          renderPrice(elements.btcContainer, price, change, 'btc');
+          elements.btcTime.innerHTML = `⏱️ ${getTimestamp()}`;
+          showRateLimit('btc');
+          
+          state.previousPrices.btc = price;
+        } else {
+          renderError(elements.btcContainer, result.error || 'Failed to fetch Bitcoin price');
+        }
+      }
+      
+      /**
+       * Fetch Ethereum price
+       */
+      async function fetchETH() {
+        const result = await fetchWithRetry(
+          `${CONFIG.apiBaseUrl}/assets/ethereum`
+        );
+        
+        if (result.success && result.data?.data?.priceUsd) {
+          const price = parseFloat(result.data.data.priceUsd);
+          const change = getPriceChange(price, state.previousPrices.eth);
+          
+          renderPrice(elements.ethContainer, price, change, 'eth');
+          elements.ethTime.innerHTML = `⏱️ ${getTimestamp()}`;
+          showRateLimit('eth');
+          
+          state.previousPrices.eth = price;
+        } else {
+          renderError(elements.ethContainer, result.error || 'Failed to fetch Ethereum price');
+        }
+      }
+      
+      /**
+       * Fetch custom asset
+       */
+      async function fetchCustomAsset() {
+        if (!state.customCoinId || state.customPaused) return;
+        
+        // Map CoinGecko ID to CoinCap ID if needed
+        const coinCapId = CONFIG.coinMapping[state.customCoinId.toLowerCase()] || state.customCoinId.toLowerCase();
+        
+        const result = await fetchWithRetry(
+          `${CONFIG.apiBaseUrl}/assets/${coinCapId}`
+        );
+        
+        if (result.success && result.data?.data?.priceUsd) {
+          const price = parseFloat(result.data.data.priceUsd);
+          const change = getPriceChange(price, state.previousPrices.custom);
+          
+          renderPrice(elements.customContainer, price, change, 'custom');
+          elements.customTime.innerHTML = `⏱️ ${getTimestamp()} • Tracking: <strong>${state.customCoinId.toUpperCase()}</strong>`;
+          showRateLimit('custom');
+          
+          state.previousPrices.custom = price;
+        } else {
+          renderError(elements.customContainer, result.error || 'Could not find price data for this coin');
+        }
+      }
+      
+      /**
+       * Track custom asset
+       */
+      function trackCustom() {
+        const url = elements.customUrl.value.trim();
+        
+        if (!url) {
+          showToast('Please enter a CoinGecko URL', 'warning');
+          elements.customUrl.focus();
+          return;
+        }
+        
+        if (!isValidUrl(url)) {
+          elements.customUrl.classList.add('invalid');
+          showToast('Invalid CoinGecko URL', 'error');
+          return;
+        }
+        
+        const coinId = extractCoinId(url);
+        
+        if (!coinId) {
+          elements.customUrl.classList.add('invalid');
+          showToast('Could not extract coin ID from URL', 'error');
+          return;
+        }
+        
+        elements.customUrl.classList.remove('invalid');
+        elements.customUrl.classList.add('valid');
+        
+        // Clear existing interval
+        if (state.intervals.custom) {
+          clearInterval(state.intervals.custom);
+        }
+        
+        state.customCoinId = coinId;
+        state.customPaused = false;
+        state.previousPrices.custom = null;
+        
+        // Show loading
+        elements.customContainer.innerHTML = '<div class="skeleton"></div>';
+        
+        // Fetch immediately
+        fetchCustomAsset();
+        
+        // Set up auto-refresh
+        state.intervals.custom = setInterval(fetchCustomAsset, CONFIG.refreshInterval);
+        
+        // Update UI
+        elements.trackBtn.textContent = '✓ Tracking';
+        elements.pauseBtn.disabled = false;
+        elements.pauseBtn.querySelector('#pauseText').textContent = 'Pause';
+        
+        showToast(`Now tracking ${coinId.toUpperCase()}`, 'success');
+      }
+      
+      /**
+       * Pause/Resume tracking
+       */
+      function pauseTracking() {
+        state.customPaused = !state.customPaused;
+        
+        const pauseText = elements.pauseBtn.querySelector('#pauseText');
+        
+        if (state.customPaused) {
+          pauseText.textContent = 'Resume';
+          elements.pauseBtn.style.background = 'var(--success)';
+          showToast('Tracking paused', 'info');
+        } else {
+          pauseText.textContent = 'Pause';
+          elements.pauseBtn.style.background = 'var(--warning)';
+          fetchCustomAsset(); // Fetch immediately on resume
+          showToast('Tracking resumed', 'success');
+        }
+      }
+      
+      /**
+       * Clear custom tracking
+       */
+      function clearCustom() {
+        if (state.intervals.custom) {
+          clearInterval(state.intervals.custom);
+          state.intervals.custom = null;
+        }
+        
+        state.customCoinId = null;
+        state.customPaused = false;
+        state.previousPrices.custom = null;
+        
+        elements.customUrl.value = '';
+        elements.customUrl.classList.remove('invalid', 'valid');
+        elements.customContainer.innerHTML = `
+          <div style="color: var(--text-secondary); font-size: 1rem;">
+            👆 Paste a CoinGecko coin URL above to start tracking
+          </div>
+        `;
+        elements.customTime.textContent = '';
+        elements.customLimit.textContent = '';
+        elements.trackBtn.textContent = '🎯 Track Asset';
+        elements.pauseBtn.disabled = true;
+        elements.inputIcon.textContent = '';
+        
+        showToast('Tracking cleared', 'info');
+      }
+      
+      /**
+       * Refresh specific asset
+       */
+      function refreshAsset(assetId) {
+        const refreshBtn = document.getElementById(`${assetId}Refresh`);
+        refreshBtn.disabled = true;
+        
+        switch(assetId) {
+          case 'btc':
+            fetchBTC();
+            break;
+          case 'eth':
+            fetchETH();
+            break;
+        }
+        
+        setTimeout(() => {
+          refreshBtn.disabled = false;
+        }, 2000);
+      }
+      
+      /**
+       * Update network status
+       */
+      function updateNetworkStatus() {
+        state.isOnline = navigator.onLine;
+        
+        if (state.isOnline) {
+          elements.networkStatus.className = 'status-dot status-online';
+          elements.networkText.textContent = 'Online';
+          showToast('Connection restored', 'success');
+          
+          // Refresh all assets
+          fetchBTC();
+          fetchETH();
+          if (state.customCoinId && !state.customPaused) {
+            fetchCustomAsset();
           }
         } else {
-          pathInput.classList.add('invalid');
-          priceEl.innerHTML = '<span class="error">⚠️ Path not found in JSON response</span>';
+          elements.networkStatus.className = 'status-dot status-offline';
+          elements.networkText.textContent = 'Offline';
+          showToast('No internet connection', 'error');
         }
-      } else {
-        priceEl.innerHTML = `<span class="error">⚠️ ${result.error}</span>`;
       }
+      
+      /**
+       * Input validation with debouncing
+       */
+      function validateInput() {
+        clearTimeout(state.debounceTimer);
+        
+        state.debounceTimer = setTimeout(() => {
+          const url = elements.customUrl.value.trim();
+          
+          if (!url) {
+            elements.customUrl.classList.remove('invalid', 'valid');
+            elements.inputIcon.textContent = '';
+            return;
+          }
+          
+          if (isValidUrl(url) && extractCoinId(url)) {
+            elements.customUrl.classList.remove('invalid');
+            elements.customUrl.classList.add('valid');
+            elements.inputIcon.textContent = '✓';
+            elements.inputIcon.style.color = 'var(--success)';
+          } else {
+            elements.customUrl.classList.remove('valid');
+            elements.customUrl.classList.add('invalid');
+            elements.inputIcon.textContent = '✗';
+            elements.inputIcon.style.color = 'var(--error)';
+          }
+        }, CONFIG.debounceDelay);
+      }
+      
+      /**
+       * Initialize application
+       */
+      function init() {
+        // Initial fetch
+        fetchBTC();
+        fetchETH();
+        
+        // Set up intervals
+        state.intervals.btc = setInterval(fetchBTC, CONFIG.refreshInterval);
+        state.intervals.eth = setInterval(fetchETH, CONFIG.refreshInterval);
+        
+        // Network status listeners
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        
+        // Input validation
+        elements.customUrl.addEventListener('input', validateInput);
+        
+        // Enter key support
+        elements.customUrl.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            trackCustom();
+          }
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+          Object.values(state.intervals).forEach(interval => {
+            if (interval) clearInterval(interval);
+          });
+        });
+        
+        // Visibility change - pause/resume when tab hidden/visible
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            // Optionally pause intervals when tab is hidden
+            console.log('Tab hidden - tracking continues');
+          } else {
+            // Refresh data when tab becomes visible
+            fetchBTC();
+            fetchETH();
+            if (state.customCoinId && !state.customPaused) {
+              fetchCustomAsset();
+            }
+          }
+        });
+      }
+      
+      // Public API
+      return {
+        init,
+        trackCustom,
+        clearCustom,
+        pauseTracking,
+        refreshAsset
+      };
+    })();
+    
+    // Initialize app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', app.init);
+    } else {
+      app.init();
     }
-    
-    // Track custom asset with auto-refresh
-    function trackCustomAsset() {
-      // Clear existing interval
-      if (customAssetInterval) {
-        clearInterval(customAssetInterval);
-      }
-      
-      // Fetch immediately
-      fetchCustomAsset();
-      
-      // Set up auto-refresh
-      customAssetInterval = setInterval(fetchCustomAsset, CONFIG.refreshInterval);
-      
-      // Update button state
-      document.getElementById("trackBtn").textContent = "Tracking... (Auto-refresh ON)";
-    }
-    
-    // Clear custom asset tracking
-    function clearCustomAsset() {
-      if (customAssetInterval) {
-        clearInterval(customAssetInterval);
-        customAssetInterval = null;
-      }
-      
-      document.getElementById("customUrl").value = "";
-      document.getElementById("jsonPath").value = "";
-      document.getElementById("customPrice").innerHTML = '<span class="loading">Enter URL and path above</span>';
-      document.getElementById("customTime").textContent = "";
-      document.getElementById("trackBtn").textContent = "Track Asset";
-      
-      // Remove validation styling
-      document.getElementById("customUrl").classList.remove('invalid');
-      document.getElementById("jsonPath").classList.remove('invalid');
-    }
-    
-    // Initialize: Fetch BTC & ETH immediately and set intervals
-    fetchBTC();
-    fetchETH();
-    
-    setInterval(fetchBTC, CONFIG.refreshInterval);
-    setInterval(fetchETH, CONFIG.refreshInterval);
-    
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
-      if (customAssetInterval) {
-        clearInterval(customAssetInterval);
-      }
-    });
   </script>
 </body>
 </html>

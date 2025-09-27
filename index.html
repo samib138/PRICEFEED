@@ -565,7 +565,8 @@
         2. Copy the page URL (e.g., <code>https://www.coingecko.com/en/coins/solana</code>)<br>
         3. Paste it above and click "Track Asset"<br>
         4. Prices auto-refresh every 30 seconds<br><br>
-        <strong>✨ Popular coins:</strong> Bitcoin, Ethereum, Cardano, Solana, XRP, Dogecoin, Polkadot, Avalanche, Polygon, Chainlink, Uniswap, Litecoin, Stellar
+        <strong>✨ Popular coins (verified):</strong><br>
+        Bitcoin (BTC), Ethereum (ETH), Cardano (ADA), Solana (SOL), XRP, Dogecoin (DOGE), Polkadot (DOT), Avalanche (AVAX), Polygon (MATIC), Chainlink (LINK), Litecoin (LTC), Stellar (XLM), Binance Coin (BNB), Tether (USDT), USD Coin (USDC), Shiba Inu (SHIB), Tron (TRX), Cosmos (ATOM), Monero (XMR)
       </div>
     </div>
   </div>
@@ -592,19 +593,45 @@
           'ethereum': 'ethereum',
           'cardano': 'cardano',
           'solana': 'solana',
-          'ripple': 'ripple',
-          'xrp': 'ripple',
+          'ripple': 'xrp',
+          'xrp': 'xrp',
           'dogecoin': 'dogecoin',
           'polkadot': 'polkadot',
-          'avalanche': 'avalanche-2',
+          'avalanche-2': 'avalanche',
+          'avalanche': 'avalanche',
           'polygon': 'polygon',
+          'matic-network': 'polygon',
           'matic': 'polygon',
           'chainlink': 'chainlink',
           'link': 'chainlink',
           'uniswap': 'uniswap',
           'litecoin': 'litecoin',
           'stellar': 'stellar',
-          'xlm': 'stellar'
+          'xlm': 'stellar',
+          'binancecoin': 'binance-coin',
+          'bnb': 'binance-coin',
+          'tether': 'tether',
+          'usdt': 'tether',
+          'usd-coin': 'usd-coin',
+          'usdc': 'usd-coin',
+          'binance-usd': 'binance-usd',
+          'busd': 'binance-usd',
+          'shiba-inu': 'shiba-inu',
+          'shib': 'shiba-inu',
+          'tron': 'tron',
+          'trx': 'tron',
+          'dai': 'multi-collateral-dai',
+          'cosmos': 'cosmos',
+          'atom': 'cosmos',
+          'monero': 'monero',
+          'xmr': 'monero',
+          'leo-token': 'leo-token',
+          'wrapped-bitcoin': 'wrapped-bitcoin',
+          'wbtc': 'wrapped-bitcoin',
+          'okb': 'okb',
+          'the-open-network': 'toncoin',
+          'toncoin': 'toncoin',
+          'ton': 'toncoin'
         }
       };
       
@@ -880,13 +907,27 @@
       }
       
       /**
+       * Search for coin by name or ID in CoinCap
+       */
+      async function searchCoin(query) {
+        const result = await fetchWithRetry(
+          `${CONFIG.apiBaseUrl}/assets?search=${encodeURIComponent(query)}&limit=1`
+        );
+        
+        if (result.success && result.data?.data?.[0]) {
+          return result.data.data[0].id;
+        }
+        return null;
+      }
+      
+      /**
        * Fetch custom asset
        */
       async function fetchCustomAsset() {
         if (!state.customCoinId || state.customPaused) return;
         
         // Map CoinGecko ID to CoinCap ID if needed
-        const coinCapId = CONFIG.coinMapping[state.customCoinId.toLowerCase()] || state.customCoinId.toLowerCase();
+        let coinCapId = CONFIG.coinMapping[state.customCoinId.toLowerCase()] || state.customCoinId.toLowerCase();
         
         const result = await fetchWithRetry(
           `${CONFIG.apiBaseUrl}/assets/${coinCapId}`
@@ -901,6 +942,19 @@
           showRateLimit('custom');
           
           state.previousPrices.custom = price;
+        } else if (result.error && result.error.includes('404')) {
+          // Try to search for the coin
+          elements.customContainer.innerHTML = '<div class="skeleton"></div>';
+          
+          const searchedId = await searchCoin(state.customCoinId);
+          
+          if (searchedId) {
+            // Update the coin ID and retry
+            CONFIG.coinMapping[state.customCoinId.toLowerCase()] = searchedId;
+            fetchCustomAsset(); // Retry with new ID
+          } else {
+            renderError(elements.customContainer, `Coin "${state.customCoinId}" not found. Try: Bitcoin, Ethereum, Cardano, Solana, XRP, etc.`);
+          }
         } else {
           renderError(elements.customContainer, result.error || 'Could not find price data for this coin');
         }

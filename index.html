@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Price Tracker - Professional</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 { 
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .asset-card { 
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .asset-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    
+    .asset-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .asset-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+      border-radius: 50%;
+    }
+    
+    h2 { 
+      color: #2d3748;
+      font-size: 1.5rem;
+    }
+    
+    .price-display { 
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+      margin: 16px 0;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .loading { 
+      color: #a0aec0;
+      font-size: 1rem;
+    }
+    
+    .error { 
+      color: #e53e3e;
+      font-size: 0.9rem;
+    }
+    
+    .success {
+      color: #38a169;
+    }
+    
+    .timestamp {
+      font-size: 0.75rem;
+      color: #718096;
+      margin-top: 8px;
+    }
+    
+    .custom-section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    label { 
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 0.9rem;
+    }
+    
+    input { 
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    input.invalid {
+      border-color: #e53e3e;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    
+    button { 
+      flex: 1;
+      padding: 12px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    
+    button:hover {
+      background: #5568d3;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    button:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+    }
+    
+    button.secondary {
+      background: #718096;
+    }
+    
+    button.secondary:hover {
+      background: #4a5568;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .status-live {
+      background: #38a169;
+    }
+    
+    .status-error {
+      background: #e53e3e;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .info-box {
+      background: #edf2f7;
+      border-left: 4px solid #667eea;
+      padding: 12px;
+      margin-top: 16px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: #4a5568;
+    }
+    
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Crypto Price Tracker</h1>
+    
+    <div class="grid">
+      <div class="asset-card">
+        <div class="asset-header">
+          <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="Bitcoin" class="asset-icon" />
+          <h2>Bitcoin (BTC)</h2>
+        </div>
+        <div class="price-display" id="btcPrice">
+          <span class="loading">Loading...</span>
+        </div>
+        <div class="timestamp" id="btcTime"></div>
+      </div>
+      
+      <div class="asset-card">
+        <div class="asset-header">
+          <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="Ethereum" class="asset-icon" />
+          <h2>Ethereum (ETH)</h2>
+        </div>
+        <div class="price-display" id="ethPrice">
+          <span class="loading">Loading...</span>
+        </div>
+        <div class="timestamp" id="ethTime"></div>
+      </div>
+    </div>
+    
+    <div class="custom-section">
+      <h2>📊 Custom Asset Tracker</h2>
+      
+      <label for="customUrl">API URL (JSON endpoint with price data):</label>
+      <input 
+        type="url" 
+        id="customUrl" 
+        placeholder="https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd"
+        aria-label="Custom API URL"
+      />
+      
+      <label for="jsonPath">JSON Path to Price (dot notation):</label>
+      <input 
+        type="text" 
+        id="jsonPath" 
+        placeholder="dogecoin.usd"
+        aria-label="JSON path to price value"
+      />
+      
+      <div class="button-group">
+        <button onclick="trackCustomAsset()" id="trackBtn">
+          Track Asset
+        </button>
+        <button onclick="clearCustomAsset()" class="secondary" id="clearBtn">
+          Clear
+        </button>
+      </div>
+      
+      <div class="price-display" id="customPrice">
+        <span class="loading">Enter URL and path above</span>
+      </div>
+      <div class="timestamp" id="customTime"></div>
+      
+      <div class="info-box">
+        <strong>💡 Example URLs:</strong><br>
+        • Dogecoin: <code>https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd</code> → Path: <code>dogecoin.usd</code><br>
+        • Cardano: <code>https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd</code> → Path: <code>cardano.usd</code>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const CONFIG = {
+      refreshInterval: 30000, // 30 seconds
+      maxRetries: 3,
+      retryDelay: 2000
+    };
+    
+    let customAssetInterval = null;
+    
+    // Utility: Validate URL
+    function isValidUrl(string) {
+      try {
+        const url = new URL(string);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+    
+    // Utility: Resolve nested JSON path
+    function resolvePath(obj, path) {
+      if (!path || !obj) return null;
+      return path.split('.').reduce((acc, part) => {
+        return acc && acc[part] !== undefined ? acc[part] : null;
+      }, obj);
+    }
+    
+    // Utility: Format price
+    function formatPrice(value) {
+      const num = parseFloat(value);
+      if (isNaN(num)) return null;
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 8
+      }).format(num);
+    }
+    
+    // Utility: Get timestamp
+    function getTimestamp() {
+      return new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+    
+    // Generic fetch with retry logic
+    async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          return { success: true, data };
+          
+        } catch (error) {
+          if (i === retries - 1) {
+            return { 
+              success: false, 
+              error: error.message.includes('CORS') 
+                ? 'CORS error - API may not allow browser requests' 
+                : error.message 
+            };
+          }
+          await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay));
+        }
+      }
+    }
+    
+    // Fetch Bitcoin price
+    async function fetchBTC() {
+      const result = await fetchWithRetry(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+      );
+      
+      const priceEl = document.getElementById("btcPrice");
+      const timeEl = document.getElementById("btcTime");
+      
+      if (result.success && result.data.bitcoin?.usd) {
+        const price = formatPrice(result.data.bitcoin.usd);
+        priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
+        timeEl.textContent = `Updated: ${getTimestamp()}`;
+      } else {
+        priceEl.innerHTML = `<span class="error">⚠️ ${result.error || 'Failed to fetch BTC price'}</span>`;
+      }
+    }
+    
+    // Fetch Ethereum price
+    async function fetchETH() {
+      const result = await fetchWithRetry(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+      );
+      
+      const priceEl = document.getElementById("ethPrice");
+      const timeEl = document.getElementById("ethTime");
+      
+      if (result.success && result.data.ethereum?.usd) {
+        const price = formatPrice(result.data.ethereum.usd);
+        priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
+        timeEl.textContent = `Updated: ${getTimestamp()}`;
+      } else {
+        priceEl.innerHTML = `<span class="error">⚠️ ${result.error || 'Failed to fetch ETH price'}</span>`;
+      }
+    }
+    
+    // Fetch custom asset
+    async function fetchCustomAsset() {
+      const url = document.getElementById("customUrl").value.trim();
+      const path = document.getElementById("jsonPath").value.trim();
+      const priceEl = document.getElementById("customPrice");
+      const timeEl = document.getElementById("customTime");
+      const urlInput = document.getElementById("customUrl");
+      const pathInput = document.getElementById("jsonPath");
+      
+      // Validation
+      if (!url || !path) {
+        priceEl.innerHTML = '<span class="error">⚠️ Please enter both URL and JSON path</span>';
+        return;
+      }
+      
+      if (!isValidUrl(url)) {
+        urlInput.classList.add('invalid');
+        priceEl.innerHTML = '<span class="error">⚠️ Invalid URL format</span>';
+        return;
+      }
+      
+      urlInput.classList.remove('invalid');
+      pathInput.classList.remove('invalid');
+      
+      // Show loading
+      priceEl.innerHTML = '<span class="loading">Fetching data...</span>';
+      
+      const result = await fetchWithRetry(url);
+      
+      if (result.success) {
+        const value = resolvePath(result.data, path);
+        
+        if (value !== null && value !== undefined) {
+          const price = formatPrice(value);
+          if (price) {
+            priceEl.innerHTML = `<span class="status-indicator status-live"></span>${price}`;
+            timeEl.textContent = `Updated: ${getTimestamp()}`;
+          } else {
+            priceEl.innerHTML = '<span class="error">⚠️ Invalid price value</span>';
+          }
+        } else {
+          pathInput.classList.add('invalid');
+          priceEl.innerHTML = '<span class="error">⚠️ Path not found in JSON response</span>';
+        }
+      } else {
+        priceEl.innerHTML = `<span class="error">⚠️ ${result.error}</span>`;
+      }
+    }
+    
+    // Track custom asset with auto-refresh
+    function trackCustomAsset() {
+      // Clear existing interval
+      if (customAssetInterval) {
+        clearInterval(customAssetInterval);
+      }
+      
+      // Fetch immediately
+      fetchCustomAsset();
+      
+      // Set up auto-refresh
+      customAssetInterval = setInterval(fetchCustomAsset, CONFIG.refreshInterval);
+      
+      // Update button state
+      document.getElementById("trackBtn").textContent = "Tracking... (Auto-refresh ON)";
+    }
+    
+    // Clear custom asset tracking
+    function clearCustomAsset() {
+      if (customAssetInterval) {
+        clearInterval(customAssetInterval);
+        customAssetInterval = null;
+      }
+      
+      document.getElementById("customUrl").value = "";
+      document.getElementById("jsonPath").value = "";
+      document.getElementById("customPrice").innerHTML = '<span class="loading">Enter URL and path above</span>';
+      document.getElementById("customTime").textContent = "";
+      document.getElementById("trackBtn").textContent = "Track Asset";
+      
+      // Remove validation styling
+      document.getElementById("customUrl").classList.remove('invalid');
+      document.getElementById("jsonPath").classList.remove('invalid');
+    }
+    
+    // Initialize: Fetch BTC & ETH immediately and set intervals
+    fetchBTC();
+    fetchETH();
+    
+    setInterval(fetchBTC, CONFIG.refreshInterval);
+    setInterval(fetchETH, CONFIG.refreshInterval);
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (customAssetInterval) {
+        clearInterval(customAssetInterval);
+      }
+    });
+  </script>
+</body>
+</html>
